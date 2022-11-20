@@ -1,5 +1,5 @@
 # Properties Files in template/ Directory
-These files provide the template configurations we used in the Experimental Evaluation part of [Dike's Technique Report](https://github.com/DBHammer/Dike/Technique_Report.pdf). 
+These files provide the template configurations we used in the Experimental Evaluation part of [Dike's Technique Report](https://github.com/DBHammer/Dike/blob/main/Technique_Report.pdf). 
 Dike.properties provides TPC-C like workloads, and on the basis of that, we provide pluggable parameters to customize the testing scenario.
 
 ## Experiments in Paper Dike

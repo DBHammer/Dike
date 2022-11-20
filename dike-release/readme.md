@@ -1,5 +1,4 @@
-# Dike: Benchmark For Distributed Database System
-Dike is an open source project for benchmarking traditional relational databases together with NewSQL systems. Dike provides several features that are crucial for OLTP applications oriented systems, including quantitative distributed transactions/queries, uneven data distribution, dynamic workload and fault injection. Dike is forked from benchmarksql v5.0 and distributed under the GNU General Public License version 2.0 (GPLv2) license.
+# How Good is the Distributed Databases in Supporting Transaction Processing  
 
 
 ## Preparation

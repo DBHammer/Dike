@@ -1,0 +1,9 @@
+build
+dist
+out
+/log
+lib
+.idea
+.vscode
+*.iml
+*.patch

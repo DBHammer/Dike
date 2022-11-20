@@ -1,0 +1,30 @@
+[lightning]
+
+# 转换数据的并发数，默认为逻辑 CPU 数量，不需要配置。
+# 混合部署的情况下可以配置为逻辑 CPU 的 75% 大小。
+# region-concurrency =
+
+# 日志
+level = "info"
+file = "tidb-lightning.log"
+
+[tikv-importer]
+# backend 设置为 local 模式
+backend = "local"
+# 设置本地临时存储路径
+sorted-kv-dir = "/mnt/ssd/sorted-kv-dir"
+
+[mydumper]
+# 源数据目录。
+data-source-dir = "/data/dike300"
+
+[tidb]
+# 目标集群的信息。tidb-server 的监听地址，填一个即可。
+host = "10.24.14.204"
+port = 4000
+user = "root"
+password = ""
+# 表架构信息在从 TiDB 的“状态端口”获取。
+status-port = 10080
+# pd-server 的地址，填一个即可
+pd-addr = "10.24.14.204:2379"

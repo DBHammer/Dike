@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project name="dike" default="build-main" basedir="." xmlns:ivy="antlib:org.apache.ivy.ant">
+
+  <description>Dike Build File</description>
+
+  <property name="src.main" location="src/main"/>
+  <property name="src.test" location="src/test"/>
+  <property name="build.main" location="build/main"/>
+  <property name="build.test" location="build/test"/>
+  <property name="dist" location="dist"/>
+  <property name="log" location="log"/>
+  <property name="lib" value="lib"/>
+  
+  <path id="classpath">
+    <fileset dir="${lib}" includes="**/*.jar"/>
+  </path>
+  
+  <path id="classpath.test">
+    <pathelement location="${build.main}"/>
+    <path refid="classpath"/>
+  </path>
+
+  <target name="ivy" description="mkdir ivy">
+		<mkdir dir="${user.home}/.ant/lib"/>
+		<get dest="${user.home}/.ant/lib/ivy.jar" src="http://search.maven.org/remotecontent?filepath=org/apache/ivy/ivy/2.5.0/ivy-2.5.0.jar" />
+	</target>
+
+  <target name="resolve" depends="ivy" description="retreive dependencies with ivy">
+    <ivy:retrieve/>
+  </target>
+
+  <target name="init" depends="clean"> 
+    <mkdir dir="${log}"/>
+  </target>
+
+  <target name="compile" depends="init">
+    <mkdir dir="${build.main}"/>
+    <javac srcdir="${src.main}" destdir="${build.main}" debug="true" includeantruntime="false">
+      <classpath refid="classpath"/>
+      <compilerarg value="-Xlint:all"/>
+    </javac>
+  </target>
+
+  <target name="build-test" depends="compile">
+    <mkdir dir="${build.test}"/>
+    <javac srcdir="${src.test}" destdir="${build.test}" includeantruntime="false">
+      <classpath refid="classpath.test"/>
+    </javac>
+  </target>
+
+  <target name="build-main" depends="compile">
+    <mkdir dir="${dist}"/>
+    <jar jarfile="${dist}/Dike.jar" basedir="${build.main}"/>
+  </target>
+
+  <target name="clean" description="clean up">
+    <delete dir="${build.main}"/>
+    <delete dir="${build.test}"/>
+    <delete dir="${dist}"/>
+  </target>
+
+  <target name="test" depends="build-test">
+    <junit printsummary="on" haltonfailure="yes">
+      <classpath>
+        <path refid="classpath.test"/>
+        <pathelement location="${build.test}"/>
+      </classpath>
+      <formatter type="brief" usefile="false"/>
+      <batchtest fork="yes">
+        <fileset dir="${src.test}">
+          <include name="**/test*.java"/>
+        </fileset>
+      </batchtest>
+    </junit>
+  </target>
+</project>

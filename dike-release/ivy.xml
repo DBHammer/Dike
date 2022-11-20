@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ivy-module version="1.0">
+    <info organisation="edu.ecnu" module="dike"/>
+
+    <configurations>
+        <conf name="compile" visibility="private" description="compilation jar" />
+        <conf name="runtime" visibility="private" extends="compile" description="runtime jar" />
+        <conf name="test" visibility="private" extends="runtime" description="test jar" />
+        <conf name="default" visibility="public" extends="runtime" description="default jar"/>
+    </configurations>
+    
+    <dependencies>
+        <dependency org="log4j" name="log4j" rev="1.2.17" conf="runtime->default"/>
+        <dependency org="com.google.guava" name="guava" rev="31.1-jre" conf="runtime->default"/>
+        <dependency org="org.apache.commons" name="commons-math3" rev="3.6.1" conf="runtime->default"/>
+        <dependency org="org.apache.commons" name="commons-lang3" rev="3.12.0" conf="runtime->default"/>
+        <dependency org="mysql" name="mysql-connector-java" rev="8.0.13" conf="runtime->default"/>
+        <dependency org="org.postgresql" name="postgresql" rev="42.3.4" conf="runtime->default"/>
+        <dependency org="junit" name="junit" rev="4.13.2" conf="test->default"/>
+        <dependency org="org.hamcrest" name="hamcrest-core" rev="1.3" conf="test->default"/>
+    </dependencies>
+</ivy-module>

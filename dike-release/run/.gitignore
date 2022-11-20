@@ -1,0 +1,5 @@
+my_*
+*.log
+.jTPCC_run_seq.dat
+results/*
+output/*

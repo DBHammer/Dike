@@ -1,10 +1,10 @@
 # How Good is the Distributed Databases in Supporting Transaction Processing  
-Dike is an open source project for benchmarking traditional relational databases together with NewSQL systems. Dike provides several features that are crucial for OLTP applications oriented systems, including quantitative distributed transactions/queries, uneven data distribution, dynamic workload and fault injection. Dike is forked from benchmarksql v5.0 and distributed under the GNU General Public License version 2.0 (GPLv2) license. The detailed [technique report](./Technique_Report.pdf) and [source code](dike-release) are listed.  We show how to use Dike as follows. 
+Dike is an open source project for benchmarking traditional relational databases together with NewSQL systems. Dike provides several features that are crucial for OLTP applications oriented systems, including quantitative distributed transactions/queries, uneven data distribution, dynamic workload and fault injection. Dike is forked from benchmarksql v5.0 and distributed under the GNU General Public License version 2.0 (GPLv2) license. The detailed [technique report](./Technique_Report.pdf) and [source code](dike-release) are open.  We show how to use Dike as follows. 
 
 
 ## Preparation
 1. A client machine to run Dike benchmarking program and workload proxy (ObProxy for OceanBase cluster, Haproxy for TiDB/CockroachDB cluster). Proxy is unnecessary in the case of Mysql/PostgreSQL/Singleton-OceanBase/Singleton-TiDB/Singleton-CockroachDB. 
-2. A cluster of 1/3/6/9/12/15 machines to deploy database service. 
+2. A cluster of 1/3/6/9/12/15 machines to deploy a database service. 
 3. Modify [hostname](./dike-release/run/hostname.txt), remove redundant clients and servers, set correct user and password.
 
 ## How To Build Dike (CentOS 7)
@@ -33,12 +33,12 @@ ssh-keygen -t rsa
 1. All deployment scripts and configuration files are placed in the deploy directory, refer to [rdeploy configuration](./dike-release/deploy/readme.md) for details about deployment procedure.
 
 ## How To Use
-1. Connect to database server with mysql client or psql and create database dike.
+1. Connect to database server with mysql client or postgresql client and create database dike.
 ```sql
 CREATE DATABASE IF NOT EXISTS dike;
 ```
 2. Modify the parameters in the property file, details about the meaning of each parameter can be found in [configuration parameter](./dike-release/config/readme.md). 
-3. Create tables and load in data with the modified property file.
+3. Create tables and load data with the modified property file.
 ```bash
 ./runDatabaseBuild.sh ../config/oceanbase.properties
 ```
@@ -48,7 +48,7 @@ Otherwise, use the given template property files instead (also need to modify co
 ```
 
 ## How To Generate Report
-Though a brief report is printed to standard output stream at the end of benchmark, more detailed statistical indicators such as throughput per second and system resource usage are also provided.
+Though a detailed report is outputted to standard output stream at the end of benchmarking, more detailed statistical indicators such as throughput per second and system resource usage are also provided.
 1. Install R language tool.
 ```bash
 sudo yum install -y R

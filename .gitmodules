@@ -1,0 +1,6 @@
+[submodule "dike-demo"]
+	path = dike-demo
+	url = https://github.com/HoniiTro19/dike-demo
+[submodule "dike-demo-backend"]
+	path = dike-demo-backend
+	url = https://github.com/HoniiTro19/dike-demo-backend.git

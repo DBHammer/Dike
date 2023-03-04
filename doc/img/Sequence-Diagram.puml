@@ -1,0 +1,35 @@
+@startuml
+
+group Initialize
+    Client -> Terminal: Start Terminal
+    Client --> TxnCounter: Start TxnCounter
+    Client -> Deamon: Start Deamon
+    Client --> OsCollector: Start OsCollector
+end
+
+group Txn Execution
+    loop util stopSignal
+        Terminal --> Terminal: Execute Txn
+        Terminal -> Client: Write Down Txn Info
+        Terminal --> TxnCounter: Record Txn
+    end
+    loop every second
+        Deamon -> Client: Send Workload Change Signal
+        Client --> Terminal: Transfer Signal
+    end
+    hnote over OsCollector: Record System Info
+    Client -> Terminal: End Terminate Signal
+    hnote over Client: Thread Join
+    Terminal -> Client: Terminal End
+end
+
+group Terminate
+    Client -> TxnCounter: Send Terminate Signal
+    TxnCounter --> Client: End TxnCounter
+    Client -> Deamon: Send Terminate Signal
+    Deamon --> Client: End Deamon
+    Client -> OsCollector: Send Terminate Signal
+    OsCollector --> Client: End OsCollector
+end
+
+@enduml

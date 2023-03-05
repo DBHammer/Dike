@@ -1,5 +1,7 @@
-# Dike: Benchmark For Distributed Database System
-Dike is an open source project for benchmarking traditional relational databases together with NewSQL systems. Dike provides several features that are crucial for OLTP applications oriented systems, including quantitative distributed transactions/queries, uneven data distribution, dynamic workload and fault injection. Dike is forked from benchmarksql v5.0 and distributed under the GNU General Public License version 2.0 (GPLv2) license. The detailed [technique report](./doc/report/Technique_Report.pdf) and source code are open. We show how to use Dike as follows.
+# Dike: A Benchmark Suite for Distributed Transactional Databases
+Dike is a new benchmark suite for benchmarking distributed transactional databases (DDBMSs), which is extended from the popular TPC-C benchmark. Dike provides several features that are crucial for DDBMSs, including quantitative distributed transactions/queries, imbalanced data and workload distribution, dynamic load variation and fault injection. Details about our designs of the aforementioned features and experiments on three open-source DDBMSs ([OceanBase](https://www.oceanbase.com/), [TiDB](https://docs.pingcap.com/zh/tidb/stable), [CockroachDB](https://www.cockroachlabs.com/)) can be found in the [Technique Report](./doc/report/Technique_Report.pdf). We also provide a front-end and back-end interactive [tool](./dike-demo/) to demonstrate the benchmark suite ([video](./doc/demo/dike.mp4)). We show how to use Dike as follows.
+
+Dike project is forked from benchmarksql v5.0 and distributed under the GNU General Public License version 2.0 (GPLv2) license. 
 
 ## Preparation
 1. A client machine to run Dike benchmarking program and workload proxy (ObProxy for OceanBase cluster, Haproxy for TiDB/CockroachDB cluster). Proxy is unnecessary in the case of Mysql/PostgreSQL/Singleton-OceanBase/Singleton-TiDB/Singleton-CockroachDB. 
@@ -14,8 +16,8 @@ yum install -y ant java-1.8* apache-ivy
 2. Clone the project to the client machine and build the project.
 ```bash
 yum install -y git
-git clone https://github.com/luyiqu/benchmarkStartSimple
-cd benchmarkStartSimple
+git clone https://github.com/DBHammer/Dike --recursive
+cd Dike
 ant resolve
 ant
 ```
@@ -28,7 +30,7 @@ ssh-keygen -t rsa
 # make sure that you can connect to the client and servers in root user
 # copy ssh key from client to servers
 ./cluster_initialize.sh PROPERTIES_FILE copySshKey
-# install chaosblade on servers
+# install chaosblade on servers for fault injection
 ./cluster_initialize.sh PROPERTIES_FILE installChaosblade
 # configure system parameters for client and servers
 ./cluster_initialize.sh PROPERTIES_FILE configureSystem

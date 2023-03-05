@@ -153,6 +153,7 @@ public class Terminal implements Runnable {
                 // uniform distribution
                 terminalWarehouseID = terminalWarehouseFixed ? terminalID + 1
                         : rnd.getWarehouseID(leftBound, rightBound);
+                // TODO: remove dynamic district in uniform distribution mode
                 terminalDistrictID = dynamicDistrict
                         ? rnd.getDynamicDistrictID(terminalWarehouseID, warehouseDistrictNum)
                         : rnd.getDistrictID();

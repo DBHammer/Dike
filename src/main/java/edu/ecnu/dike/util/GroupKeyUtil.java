@@ -11,22 +11,25 @@ import java.util.HashMap;
 
 public class GroupKeyUtil {
 
-    private volatile static HashMap<Integer, ArrayList<Integer>> groupWids;
+    private HashMap<Integer, ArrayList<Integer>> groupWids;
+    private volatile static GroupKeyUtil instance;
+    private GroupKeyUtil(int warehouses, int groupsz) {
+        int groups = warehouses / groupsz;
+        groupWids = new HashMap<>(groups);
+        for (int w = 1; w <= warehouses; w++) {
+            // add warehouse id to corresponding key group
+            groupWids.computeIfAbsent(w % groups, k -> new ArrayList<>()).add(w);
+        }
+    }
 
     public static HashMap<Integer, ArrayList<Integer>> getGroupKey(int warehouses, int groupsz) {
-        if (groupWids == null) {
+        if (instance == null) {
             synchronized (GroupKeyUtil.class) {
-                if (groupWids == null) {
-                    int groups = warehouses / groupsz;
-                    groupWids = new HashMap<>(groups);
-                    for (int w = 1; w <= warehouses; w++) {
-                        // add warehouse id to corresponding key group
-                        groupWids.computeIfAbsent(w % groups, k -> new ArrayList<>()).add(w);
-                    }
+                if (instance == null) {
+                    instance = new GroupKeyUtil(warehouses, groupsz);
                 }
             }
         }
-        return groupWids;
+        return instance.groupWids;
     }
-
 }

@@ -1,3 +1,9 @@
+/*
+ * SessionRouteUtil - Check which server the session is located on.
+ *
+ * Copyright (C) 2022, Huidong Zhang, Luyi Qu
+ */
+
 package edu.ecnu.dike.util;
 
 import java.sql.Statement;

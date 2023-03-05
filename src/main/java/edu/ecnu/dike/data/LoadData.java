@@ -109,7 +109,7 @@ public class LoadData {
 		LoadDataWorker[] workers = new LoadDataWorker[numWorkers];
 		Thread[] workerThreads = new Thread[numWorkers];
 		BasicRandom rnd = new BasicRandom();
-		// Alternative PoissonRandom
+		// TODO: parametric skew factor for dynamic district 
 		ZipFianRandom zrnd = runtimeProps.isDynamicDistrict() ? new ZipFianRandom(numWarehouses * 10, 1.5) : null;
 		for (int i = 0; i < numWorkers; i++) {
 			if (writeCSV) {

@@ -19,38 +19,42 @@ import edu.ecnu.dike.type.DbType;
 
 public class ItemCacheUtil {
 
-    private volatile static String itemCache;
+    private String itemCache;
+    private volatile static ItemCacheUtil instance;
+    private ItemCacheUtil(Connection conn, DbType dbType) throws SQLException {
+        switch (dbType) {
+            case DB_TIDB:
+                String tracelog = null;
+                Statement stmt = conn.createStatement();
+                HashSet<String> matchSet = new HashSet<>();
+                Pattern pattern = Pattern.compile("[0-9]+.[0-9]+.[0-9]+.[0-9]+");
+                ResultSet rs = stmt
+                        .executeQuery("trace format='log' SELECT * FROM table_item WHERE i_id = 10000");
+                while (rs.next()) {
+                    tracelog = rs.getString("event");
+                    Matcher matcher = pattern.matcher(tracelog);
+                    if (matcher.find()) {
+                        matchSet.add(matcher.group(0));
+                    }
+                }
+                assert matchSet.size() == 1;
+                itemCache = new ArrayList<>(matchSet).get(0);
+                rs.close();
+                break;
+            default:
+                break;
+        }
+    }
 
     public static String getItemCache(Connection conn, DbType dbType) throws SQLException {
-        if (itemCache == null) {
+        if (instance == null) {
             synchronized (ItemCacheUtil.class) {
-                if (itemCache == null) {
-                    switch (dbType) {
-                        case DB_TIDB:
-                            String tracelog = null;
-                            Statement stmt = conn.createStatement();
-                            HashSet<String> matchSet = new HashSet<>();
-                            Pattern pattern = Pattern.compile("[0-9]+.[0-9]+.[0-9]+.[0-9]+");
-                            ResultSet rs = stmt
-                                    .executeQuery("trace format='log' SELECT * FROM table_item WHERE i_id = 10000");
-                            while (rs.next()) {
-                                tracelog = rs.getString("event");
-                                Matcher matcher = pattern.matcher(tracelog);
-                                if (matcher.find()) {
-                                    matchSet.add(matcher.group(0));
-                                }
-                            }
-                            assert matchSet.size() == 1;
-                            itemCache = new ArrayList<>(matchSet).get(0);
-                            rs.close();
-                            break;
-                        default:
-                            break;
-                    }
+                if (instance == null) {
+                    instance = new ItemCacheUtil(conn, dbType);
                 }
             }
         }
-        return itemCache;
+        return instance.itemCache;
     } // end itemCacheInit
 
 } // end ItemCache

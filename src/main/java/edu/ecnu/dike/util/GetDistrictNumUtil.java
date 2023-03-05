@@ -14,30 +14,34 @@ import java.util.HashMap;
 
 public class GetDistrictNumUtil {
 
-    private volatile static HashMap<Integer, Integer> warehouseDistrictNum;
+    private HashMap<Integer, Integer> warehouseDistrictNum;
+    private volatile static GetDistrictNumUtil instance;
+    private GetDistrictNumUtil(int numWarehouse, Connection conn) throws SQLException {
+        ResultSet rs = null;
+        warehouseDistrictNum = new HashMap<>();
+        PreparedStatement stmtGetDistrictNum = conn
+                .prepareStatement("SELECT count(*) AS district_num FROM table_district WHERE d_w_id = ?");
+        for (int i = 1; i <= numWarehouse; i++) {
+            stmtGetDistrictNum.setInt(1, i);
+            rs = stmtGetDistrictNum.executeQuery();
+            if (!rs.next()) {
+                rs.close();
+                throw new SQLException("get incomplete while search for warehouse " + i, "02000");
+            }
+            warehouseDistrictNum.put(i, rs.getInt("district_num"));
+        }
+        rs.close();
+    }
 
     public static HashMap<Integer, Integer> getWarehouseDistrictNum(int numWarehouse, Connection conn)
             throws SQLException {
-        if (warehouseDistrictNum == null) {
+        if (instance == null) {
             synchronized (GetDistrictNumUtil.class) {
-                if (warehouseDistrictNum == null) {
-                    ResultSet rs = null;
-                    warehouseDistrictNum = new HashMap<>();
-                    PreparedStatement stmtGetDistrictNum = conn
-                            .prepareStatement("SELECT count(*) AS district_num FROM table_district WHERE d_w_id = ?");
-                    for (int i = 1; i <= numWarehouse; i++) {
-                        stmtGetDistrictNum.setInt(1, i);
-                        rs = stmtGetDistrictNum.executeQuery();
-                        if (!rs.next()) {
-                            rs.close();
-                            throw new SQLException("get incomplete while search for warehouse " + i, "02000");
-                        }
-                        warehouseDistrictNum.put(i, rs.getInt("district_num"));
-                    }
-                    rs.close();
+                if (instance == null) {
+                    instance = new GetDistrictNumUtil(numWarehouse, conn);
                 }
             }
         }
-        return warehouseDistrictNum;
+        return instance.warehouseDistrictNum;
     }
 }

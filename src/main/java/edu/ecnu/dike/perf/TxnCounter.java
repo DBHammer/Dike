@@ -17,12 +17,20 @@ import java.util.Collections;
 import java.util.Formatter;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 import org.apache.log4j.Logger;
 
 import edu.ecnu.dike.control.Client;
 import edu.ecnu.dike.util.ListUtil;
+import edu.ecnu.dike.type.DbType;
 import edu.ecnu.dike.type.TxnType;
+import edu.ecnu.dike.config.ConnectionProperty;
+import edu.ecnu.dike.util.PrintExceptionUtil;
+import edu.ecnu.dike.util.SelectDbUtil;
 
 public class TxnCounter implements Runnable {
 
@@ -146,7 +154,7 @@ public class TxnCounter implements Runnable {
     } // end printStatus
 
     // group results by seconds and record down to files
-    public void generateAggr(String resultDirName) {
+    public void generateAggr(DbType dbType, String resultDirName) {
         // metrics holder
         int rollbacks = 0;
         int errors = 0;
@@ -172,6 +180,21 @@ public class TxnCounter implements Runnable {
                 }
             }
         }
+
+        // get table size
+        String storage[] = new String[resourcecsv.size()];
+        try {
+            ConnectionProperty connProps = client.getConnProp();
+            switch (dbType) {
+                case DB_OCEANBASE:
+                    storage = SelectDbUtil.getOBTableSize(connProps.getConn(), connProps.getProperty(), resourcecsv.size());
+                default:
+                    // TODO: get the table size of other databases
+                    break;
+            }
+        } catch (SQLException se) {
+            log.error(PrintExceptionUtil.getSQLExceptionInfo(se));
+        }
         try {
             // open buffered io
             BufferedReader reader = new BufferedReader(new FileReader(resultcsv));
@@ -196,6 +219,11 @@ public class TxnCounter implements Runnable {
             }
             for (String name : resourceName) {
                 header.append("cpu-")
+                      .append(name)
+                      .append(",");
+            }
+            for (String name : resourceName) {
+                header.append("storage-")
                       .append(name)
                       .append(",");
             }
@@ -268,6 +296,9 @@ public class TxnCounter implements Runnable {
                             fmt.format("%.2f,", 0.0);
                         }
 
+                    }
+                    for (int i = 0; i < resourcecsv.size(); i++) {
+                        fmt.format("%.2f,", storage[i]);
                     }
                     ci = cireader.readLine();
                     int ciparse = ci != null ? Integer.parseInt(ci.split(",")[1]) : 0;

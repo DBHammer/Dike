@@ -302,7 +302,7 @@ public class Client {
             }
 
             txnCounter.endReport(resultDirName);
-            txnCounter.generateAggr(resultDirName);
+            txnCounter.generateAggr(runtimeProps.getDbType(), resultDirName);
             log.info("All terminals end working at " + getCurrentTime());
         }
     } // end signalTerminalEnd
@@ -397,5 +397,9 @@ public class Client {
 
     public BasicRandom getRnd() {
         return rnd;
+    }
+
+    public ConnectionProperty getConnProp() {
+        return connProps;
     }
 }

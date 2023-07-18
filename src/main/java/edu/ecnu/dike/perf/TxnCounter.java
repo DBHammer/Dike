@@ -188,6 +188,7 @@ public class TxnCounter implements Runnable {
             switch (dbType) {
                 case DB_OCEANBASE:
                     storage = SelectDbUtil.getOBTableSize(connProps.getConn(), connProps.getProperty(), resourcecsv.size());
+                    break;
                 default:
                     // TODO: get the table size of other databases
                     break;

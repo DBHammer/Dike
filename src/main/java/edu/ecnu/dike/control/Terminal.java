@@ -76,7 +76,7 @@ public class Terminal implements Runnable {
         // get mixture transaction rate
         int[] weightList = runtimeProps.getTransactionsWeight();
         cumWeightList = new int[weightList.length];
-        cumWeightList[0] =  weightList[0];
+        cumWeightList[0] = weightList[0];
         for (int i = 1; i < cumWeightList.length; i++) {
             cumWeightList[i] = cumWeightList[i - 1] + weightList[i];
         }
@@ -221,70 +221,60 @@ public class Terminal implements Runnable {
                 int retryCnt = 0;
                 while (throwables != null) {
                     String sqlState = throwables.getSQLState();
-                    switch (sqlState) {
-                        case "08S01":
-                        case "S1009":
-                        case "08003":
-                        case "57P01":
-                        case "08001":
-                            // catch communications link failure and restart connection
-                            // try reconnecting to database at most to 10 times
-                            txn.setError();
-                            log.debug("Get communication link failure" + PrintExceptionUtil.getSQLExceptionInfo(throwables));
-                            while (true) {
-                                try {
-                                    retryCnt++;
-                                    restartConnection();
-                                    break;
-                                } catch (SQLException serc) {
-                                    log.debug("Get sql exception while restart connection"
-                                            + PrintExceptionUtil.getSQLExceptionInfo(serc));
-                                    if (retryCnt > 10) {
-                                        log.fatal("Terminal-" + terminalID
-                                                + " lose connection to database while running benchmark");
-                                        client.signalTerminalEnd(threadID);
-                                        return;
-                                    }
-                                }
-                            }
-                            break;
-                        case "25000":
-                        case "40001":
-                            if (runtimeProps.getRollbackRetry()) {
-                                log.debug(
-                                        "Get transaction retry exception" + PrintExceptionUtil.getSQLExceptionInfo(throwables));
-                                while (true) {
-                                    try {
-                                        retryCnt++;
-                                        txn.txnRetry();
-                                        break;
-                                    } catch (SQLException sse) {
-                                        log.debug("Get exception while retry transaction"
-                                                + PrintExceptionUtil.getSQLExceptionInfo(sse));
-                                        try {
-                                            if (retryCnt > 5) {
-                                                txn.txnRollback();
-                                                log.debug("Fail to execute transaction after retry 5 times");
-                                            }
-                                        } catch (SQLException ignored) {
-
-                                        }
-                                    }
-                                }
-                                break;
-                            }
-                        default:
-                            // rollback sql exceptions by default
+                    if (isLinkLost(sqlState)) {
+                        // catch communications link failure and restart connection
+                        // try reconnecting to database at most to 10 times
+                        txn.setError();
+                        log.debug(
+                                "Get communication link failure" + PrintExceptionUtil.getSQLExceptionInfo(throwables));
+                        while (true) {
                             try {
-                                txn.txnRollback();
-                            } catch (SQLException serbk) {
-                                txn.setError();
-                                log.debug("Get unexpected SQLException on rollback"
-                                        + PrintExceptionUtil.getSQLExceptionInfo(serbk));
+                                retryCnt++;
+                                restartConnection();
+                                break;
+                            } catch (SQLException serc) {
+                                log.debug("Get sql exception while restart connection"
+                                        + PrintExceptionUtil.getSQLExceptionInfo(serc));
+                                if (retryCnt > 10) {
+                                    log.fatal("Terminal-" + terminalID
+                                            + " lose connection to database while running benchmark");
+                                    client.signalTerminalEnd(threadID);
+                                    return;
+                                }
                             }
-                            log.debug("Catch unexpected SQLException when executing transaction " + txn.getTxnType()
-                                    + PrintExceptionUtil.getSQLExceptionInfo(throwables));
-                            break;
+                        }
+                    } else if (isTxnConcurrencyAbort(sqlState) && runtimeProps.getRollbackRetry()) {
+                        log.debug(
+                                "Get transaction retry exception" + PrintExceptionUtil.getSQLExceptionInfo(throwables));
+                        while (true) {
+                            try {
+                                retryCnt++;
+                                txn.txnRetry();
+                                break;
+                            } catch (SQLException sse) {
+                                log.debug("Get exception while retry transaction"
+                                        + PrintExceptionUtil.getSQLExceptionInfo(sse));
+                                try {
+                                    if (retryCnt > 5) {
+                                        txn.txnRollback();
+                                        log.debug("Fail to execute transaction after retry 5 times");
+                                    }
+                                } catch (SQLException ignored) {
+
+                                }
+                            }
+                        }
+                    } else {
+                        // rollback sql exceptions by default
+                        try {
+                            txn.txnRollback();
+                        } catch (SQLException serbk) {
+                            txn.setError();
+                            log.debug("Get unexpected SQLException on rollback"
+                                    + PrintExceptionUtil.getSQLExceptionInfo(serbk));
+                        }
+                        log.debug("Catch unexpected SQLException when executing transaction " + txn.getTxnType()
+                                + PrintExceptionUtil.getSQLExceptionInfo(throwables));
                     }
                     throwables = throwables.getNextException();
                 }
@@ -363,5 +353,25 @@ public class Terminal implements Runnable {
         if (log.isTraceEnabled()) {
             log.trace(txn.toString());
         }
+    }
+
+    private boolean isLinkLost(String sqlState) {
+        String[] linkLostState = { "08S01", "S1009", "08003", "57P01", "08001" };
+        for (String state : linkLostState) {
+            if (sqlState.equals(state)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isTxnConcurrencyAbort(String sqlState) {
+        String[] txnAbortState = { "25000", "40001" };
+        for (String state : txnAbortState) {
+            if (sqlState.equals(state)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
